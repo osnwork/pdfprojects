@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ders Notu → PDF</title>
+<meta name="description" content="Okullar için ders notlarını yazın, düzenleyin ve tek tıkla PDF olarak indirin. Kurulum ve üyelik gerekmez.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📒</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1d2b4f; --ink-soft:#4a5780; --desk:#e4e9f2; --panel:#f7f9fd;
+  --paper:#ffffff; --line:#bcd0ea; --mark:#ffe45c; --accent:#2f5bd9; --accent-d:#2447b0; --ok:#1f7a4d;
+  --head:"Bricolage Grotesque",system-ui,sans-serif; --body:"Source Serif 4",Georgia,serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--desk);color:var(--ink);font-family:var(--head);min-height:100vh}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 24px;background:var(--ink);color:#fff;position:sticky;top:0;z-index:20}
+.brand{font-weight:800;font-size:1.25rem;letter-spacing:-.01em;display:flex;align-items:center;gap:10px}
+.brand i{font-style:normal;background:var(--mark);color:var(--ink);padding:2px 8px;border-radius:4px;transform:rotate(-3deg);display:inline-block}
+.actions{display:flex;gap:10px;align-items:center}
+.status{font-size:.85rem;opacity:.75}
+.btn{border:0;border-radius:8px;padding:10px 18px;font-weight:700;cursor:pointer;background:#fff;color:var(--ink)}
+.btn:hover{background:#eef2fb}
+.btn.primary{background:var(--mark);color:var(--ink)}
+.btn.primary:hover{background:#ffd930}
+.btn[disabled]{opacity:.6;cursor:wait}
+
+.layout{display:grid;grid-template-columns:320px minmax(0,1fr);gap:24px;max-width:1280px;margin:0 auto;padding:24px}
+aside{background:var(--panel);border-radius:14px;padding:20px;align-self:start;position:sticky;top:78px;box-shadow:0 1px 0 #fff inset,0 0 0 1px #d3dbea}
+aside h2{margin:0 0 12px;font-size:1rem}
+aside h2:not(:first-child){margin-top:22px}
+label{display:block;font-size:.85rem;font-weight:500;color:var(--ink-soft);margin:10px 0 4px}
+input[type=text],input[type=date],select{width:100%;padding:9px 10px;border:1.5px solid #c5cfe3;border-radius:8px;background:#fff}
+input:focus,select:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px #2f5bd930}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.seg button{padding:8px 4px;border:1.5px solid #c5cfe3;background:#fff;border-radius:8px;cursor:pointer;font-weight:500}
+.seg button[aria-pressed=true]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.link{background:none;border:0;color:var(--accent-d);text-decoration:underline;cursor:pointer;padding:0;margin-top:14px}
+
+.work{min-width:0}
+.toolbar{display:flex;flex-wrap:wrap;gap:6px;background:var(--panel);padding:8px;border-radius:12px;margin-bottom:16px;position:sticky;top:70px;z-index:10;box-shadow:0 0 0 1px #d3dbea}
+.toolbar button,.toolbar label.tb{min-width:38px;height:38px;padding:0 10px;border:0;background:transparent;border-radius:8px;cursor:pointer;font-weight:700;display:inline-flex;align-items:center;justify-content:center;margin:0;color:var(--ink)}
+.toolbar button:hover,.toolbar label.tb:hover{background:#dfe6f5}
+.toolbar .sep{width:1px;background:#c5cfe3;margin:4px 4px}
+.toolbar input[type=file]{display:none}
+
+.scroller{overflow-x:auto;padding-bottom:20px}
+.sheet{width:794px;margin:0 auto;background:var(--paper);padding:0 56px;box-shadow:0 10px 30px #1d2b4f26,0 0 0 1px #c9d3e6;font-family:var(--body);font-size:17px;line-height:1.7;color:#16203a}
+.sheet.lined{background-image:linear-gradient(transparent 28.9px,var(--line) 29px);background-size:100% 29px}
+.sheet.grid{background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:28px 28px}
+.sheet header{padding:48px 0 14px;margin-bottom:18px;border-bottom:3px solid var(--ink);background:#fff;margin-left:-8px;margin-right:-8px;padding-left:8px;padding-right:8px}
+.sheet .school{font-family:var(--head);font-weight:700;font-size:.95rem;color:var(--ink-soft)}
+.sheet h1{font-family:var(--head);font-weight:800;font-size:2.1rem;line-height:1.15;margin:4px 0 12px;letter-spacing:-.02em}
+.sheet h1 span{background:linear-gradient(transparent 58%,var(--mark) 58%)}
+.sheet .meta{display:flex;flex-wrap:wrap;gap:6px 22px;font-family:var(--head);font-size:.9rem;color:var(--ink-soft)}
+.sheet .meta b{color:var(--ink)}
+.note{min-height:760px;padding:6px 0 60px;outline:none;word-wrap:break-word}
+.note:empty::before{content:attr(data-ph);color:#8a96b4}
+.note h2{font-family:var(--head);font-size:1.45rem;margin:1.1em 0 .3em;line-height:1.2}
+.note h3{font-family:var(--head);font-size:1.15rem;margin:1em 0 .2em}
+.note p,.note div{margin:0 0 .5em}
+.note ul,.note ol{margin:.3em 0 .6em;padding-left:1.4em}
+.note img{max-width:100%;height:auto;border-radius:4px;margin:8px 0;display:block;break-inside:avoid}
+.note mark{background:var(--mark);padding:0 2px}
+.sheet .foot{font-family:var(--head);font-size:.75rem;color:#8a96b4;padding:10px 0 24px;text-align:right}
+
+.tip{max-width:794px;margin:14px auto 0;font-size:.9rem;color:var(--ink-soft)}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 18px;border-radius:10px;opacity:0;transition:.25s;pointer-events:none;z-index:50}
+.toast.show{opacity:1;transform:translateX(-50%)}
+
+@media (max-width:1000px){
+  .layout{grid-template-columns:1fr;padding:14px}
+  aside{position:static}
+  .toolbar{top:62px}
+  .top{padding:12px 14px;position:static}
+  .status{display:none}
+}
+@media (prefers-reduced-motion:reduce){.toast{transition:none}}
+@media print{
+  body{background:#fff}
+  .top,aside,.toolbar,.tip,.toast{display:none!important}
+  .layout{display:block;padding:0;max-width:none}
+  .scroller{overflow:visible}
+  .sheet{box-shadow:none;width:auto;margin:0;padding:0 8mm}
+  @page{size:A4;margin:12mm}
+}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="brand">📒 Ders Notu <i>PDF</i></div>
+  <div class="actions">
+    <span class="status" id="status" aria-live="polite">Taslak kaydedildi</span>
+    <button class="btn" id="printBtn">Yazdır</button>
+    <button class="btn primary" id="pdfBtn">PDF indir</button>
+  </div>
+</div>
+
+<div class="layout">
+  <aside aria-label="Not bilgileri">
+    <h2>Not bilgileri</h2>
+    <label for="school">Okul adı</label>
+    <input type="text" id="school" placeholder="Örn. Atatürk İlkokulu">
+    <label for="topic">Konu başlığı</label>
+    <input type="text" id="topic" placeholder="Örn. Canlılar ve Yaşam">
+    <div class="row">
+      <div><label for="course">Ders</label><input type="text" id="course" placeholder="Fen Bilimleri"></div>
+      <div><label for="grade">Sınıf</label><input type="text" id="grade" placeholder="3-A"></div>
+    </div>
+    <label for="teacher">Öğretmen</label>
+    <input type="text" id="teacher" placeholder="Ad Soyad">
+    <label for="date">Tarih</label>
+    <input type="date" id="date">
+
+    <h2>Sayfa görünümü</h2>
+    <div class="seg" role="group" aria-label="Kağıt türü">
+      <button data-paper="plain" aria-pressed="true">Düz</button>
+      <button data-paper="lined">Çizgili</button>
+      <button data-paper="grid">Kareli</button>
+    </div>
+    <label for="size">Yazı boyutu</label>
+    <select id="size">
+      <option value="15">Küçük</option>
+      <option value="17" selected>Normal</option>
+      <option value="20">Büyük</option>
+      <option value="24">Çok büyük (küçük sınıflar)</option>
+    </select>
+    <button class="link" id="clear">Tüm notu temizle</button>
+  </aside>
+
+  <main class="work">
+    <div class="toolbar" role="toolbar" aria-label="Biçimlendirme">
+      <button data-cmd="bold" title="Kalın" aria-label="Kalın"><b>K</b></button>
+      <button data-cmd="italic" title="İtalik" aria-label="İtalik"><i>İ</i></button>
+      <button data-cmd="underline" title="Altı çizili" aria-label="Altı çizili"><u>A</u></button>
+      <button data-cmd="hiliteColor" data-val="#ffe45c" title="Vurgula" aria-label="Vurgula">🖍️</button>
+      <span class="sep"></span>
+      <button data-block="h2" title="Başlık">Başlık</button>
+      <button data-block="h3" title="Alt başlık">Alt başlık</button>
+      <button data-block="p" title="Normal metin">Metin</button>
+      <span class="sep"></span>
+      <button data-cmd="insertUnorderedList" title="Madde işaretli liste" aria-label="Madde işaretli liste">• Liste</button>
+      <button data-cmd="insertOrderedList" title="Numaralı liste" aria-label="Numaralı liste">1. Liste</button>
+      <span class="sep"></span>
+      <button data-cmd="justifyLeft" title="Sola hizala" aria-label="Sola hizala">⯇</button>
+      <button data-cmd="justifyCenter" title="Ortala" aria-label="Ortala">≡</button>
+      <button data-cmd="undo" title="Geri al" aria-label="Geri al">↶</button>
+      <button data-cmd="redo" title="Yinele" aria-label="Yinele">↷</button>
+      <span class="sep"></span>
+      <label class="tb" for="img" title="Resim ekle">🖼️ Resim ekle</label>
+      <input type="file" id="img" accept="image/*" multiple>
+    </div>
+
+    <div class="scroller">
+      <article class="sheet" id="sheet">
+        <header>
+          <div class="school" id="vSchool"></div>
+          <h1><span id="vTopic">Konu başlığı</span></h1>
+          <div class="meta" id="vMeta"></div>
+        </header>
+        <div class="note" id="note" contenteditable="true" spellcheck="true" lang="tr" data-ph="Notlarınızı buraya yazın veya yapıştırın…"></div>
+        <div class="foot">Ders Notu PDF ile hazırlandı</div>
+      </article>
+    </div>
+    <p class="tip">İpucu: Word veya web sayfasından kopyaladığınız metni doğrudan buraya yapıştırabilirsiniz. Uzun notlar PDF'de otomatik olarak sayfalara bölünür.</p>
+  </main>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+(function(){
+  const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
+  const KEY='dersNotuPdf.v1';
+  const f={school:$('#school'),topic:$('#topic'),course:$('#course'),grade:$('#grade'),teacher:$('#teacher'),date:$('#date')};
+  const note=$('#note'), sheet=$('#sheet');
+  let paper='plain';
+
+  const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('show'),2200)}
+
+  function renderHeader(){
+    $('#vSchool').textContent=f.school.value;
+    $('#vTopic').textContent=f.topic.value||'Konu başlığı';
+    const parts=[];
+    if(f.course.value)parts.push('Ders: <b>'+esc(f.course.value)+'</b>');
+    if(f.grade.value)parts.push('Sınıf: <b>'+esc(f.grade.value)+'</b>');
+    if(f.teacher.value)parts.push('Öğretmen: <b>'+esc(f.teacher.value)+'</b>');
+    if(f.date.value){
+      const d=new Date(f.date.value+'T00:00:00');
+      parts.push('Tarih: <b>'+d.toLocaleDateString('tr-TR',{day:'numeric',month:'long',year:'numeric'})+'</b>');
+    }
+    $('#vMeta').innerHTML=parts.join('');
+  }
+  function applyLook(){
+    sheet.classList.toggle('lined',paper==='lined');
+    sheet.classList.toggle('grid',paper==='grid');
+    $$('[data-paper]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.paper===paper));
+    sheet.style.fontSize=$('#size').value+'px';
+  }
+  let timer;
+  function save(){
+    clearTimeout(timer);
+    timer=setTimeout(()=>{
+      try{
+        const data={html:note.innerHTML,paper,size:$('#size').value};
+        for(const k in f)data[k]=f[k].value;
+        localStorage.setItem(KEY,JSON.stringify(data));
+        $('#status').textContent='Taslak kaydedildi';
+      }catch(e){$('#status').textContent='Kaydedilemedi (depolama dolu)'}
+    },400);
+    $('#status').textContent='Kaydediliyor…';
+  }
+  function load(){
+    try{
+      const d=JSON.parse(localStorage.getItem(KEY)||'null');
+      if(d){
+        note.innerHTML=d.html||'';paper=d.paper||'plain';
+        $('#size').value=d.size||'17';
+        for(const k in f)if(d[k]!==undefined)f[k].value=d[k];
+      }
+    }catch(e){}
+    if(!f.date.value){f.date.value=new Date().toISOString().slice(0,10)}
+  }
+
+  Object.values(f).forEach(i=>i.addEventListener('input',()=>{renderHeader();save()}));
+  note.addEventListener('input',save);
+  $('#size').addEventListener('change',()=>{applyLook();save()});
+  $$('[data-paper]').forEach(b=>b.addEventListener('click',()=>{paper=b.dataset.paper;applyLook();save()}));
+
+  // Biçimlendirme (düğmeye basınca seçim kaybolmasın)
+  $$('.toolbar button').forEach(b=>{
+    b.addEventListener('mousedown',e=>e.preventDefault());
+    b.addEventListener('click',()=>{
+      note.focus();
+      if(b.dataset.block)document.execCommand('formatBlock',false,b.dataset.block);
+      else document.execCommand(b.dataset.cmd,false,b.dataset.val||null);
+      save();
+    });
+  });
+
+  // Resim ekleme (küçültülerek)
+  $('#img').addEventListener('change',e=>{
+    [...e.target.files].forEach(file=>{
+      const r=new FileReader();
+      r.onload=()=>{
+        const im=new Image();
+        im.onload=()=>{
+          const max=1100,s=Math.min(1,max/im.width);
+          const c=document.createElement('canvas');
+          c.width=im.width*s;c.height=im.height*s;
+          c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+          note.focus();
+          document.execCommand('insertImage',false,c.toDataURL('image/jpeg',.82));
+          save();
+        };
+        im.src=r.result;
+      };
+      r.readAsDataURL(file);
+    });
+    e.target.value='';
+  });
+
+  // Yapıştırmada gereksiz stilleri temizle (resimleri koru)
+  note.addEventListener('paste',e=>{
+    const html=e.clipboardData.getData('text/html');
+    if(!html)return;
+    e.preventDefault();
+    const doc=new DOMParser().parseFromString(html,'text/html');
+    doc.querySelectorAll('script,style,meta,link').forEach(n=>n.remove());
+    doc.querySelectorAll('*').forEach(n=>{n.removeAttribute('style');n.removeAttribute('class');n.removeAttribute('id')});
+    document.execCommand('insertHTML',false,doc.body.innerHTML);
+  });
+
+  $('#clear').addEventListener('click',()=>{
+    if(confirm('Yazdığınız not silinecek. Emin misiniz?')){note.innerHTML='';save();toast('Not temizlendi')}
+  });
+
+  function fileName(){
+    const base=(f.topic.value||'ders-notu').toLocaleLowerCase('tr')
+      .replace(/ç/g,'c').replace(/ğ/g,'g').replace(/ı/g,'i').replace(/ö/g,'o').replace(/ş/g,'s').replace(/ü/g,'u')
+      .replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+    return (base||'ders-notu')+'.pdf';
+  }
+
+  $('#pdfBtn').addEventListener('click',async()=>{
+    if(typeof html2pdf==='undefined'){toast('PDF aracı yüklenemedi. İnternet bağlantısını kontrol edin.');return}
+    const btn=$('#pdfBtn');btn.disabled=true;btn.textContent='Hazırlanıyor…';
+    note.blur();
+    try{
+      await document.fonts.ready;
+      await html2pdf().set({
+        margin:[10,0,10,0],
+        filename:fileName(),
+        image:{type:'jpeg',quality:.95},
+        html2canvas:{scale:2,useCORS:true,backgroundColor:'#ffffff',scrollY:0},
+        jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},
+        pagebreak:{mode:['css','legacy'],avoid:['img','h2','h3','li']}
+      }).from(sheet).save();
+      toast('PDF indirildi');
+    }catch(err){console.error(err);toast('PDF oluşturulamadı')}
+    btn.disabled=false;btn.textContent='PDF indir';
+  });
+  $('#printBtn').addEventListener('click',()=>window.print());
+
+  load();applyLook();renderHeader();
+})();
+</script>
+</body>
+</html>
